@@ -6,6 +6,14 @@ This project is a minimal reproduction case for the screen flickering issue repo
 
 When Claude Code processes requests, the entire terminal buffer redraws with each status update instead of just refreshing the indicator line, causing screen flickering that can be problematic for users sensitive to flashing lights.
 
+## Status
+
+- ✅ **Reproduction Confirmed** (2025-11-03) - Successfully reproduced the flickering
+- ⏳ **OSC133 Testing** - Tested on GNOME Terminal (inconclusive - no OSC133 support)
+- ⏳ **Fix Testing** - Testing potential solutions in progress
+
+📋 **See [FINDINGS.md](./FINDINGS.md) for detailed test results**
+
 ## What This Does
 
 This test app mimics Claude Code's rendering behavior:
@@ -29,15 +37,22 @@ npm start
 
 ## Testing Different Scenarios
 
-### Current Version (Official Ink)
+### Baseline Test (Official Ink)
 ```bash
 npm start
 ```
 
-### With OSC133 Sequences (Coming Soon)
+### With OSC133 Sequences
 ```bash
 npm run start:osc133
 ```
+**Note**: Requires terminal with OSC133 support (Kitty, Windows Terminal, VS Code)
+
+### Stress Test (Aggressive Rendering)
+```bash
+npm run stress
+```
+⚠️ **Warning**: Updates every 50ms - may be uncomfortable!
 
 ## Terminal Compatibility
 
@@ -57,8 +72,14 @@ Test this on different terminals to compare behavior:
 
 ## Next Steps
 
-1. Confirm flickering reproduces in this minimal app
-2. Compare with Claude Code's behavior
-3. Test with OSC133 sequences added
-4. Try bcherny's Ink fork
-5. Profile rendering to understand the issue
+1. ✅ ~~Confirm flickering reproduces in this minimal app~~
+2. ✅ ~~Compare with Claude Code's behavior~~
+3. ⏳ Test with OSC133 on compatible terminal (Kitty, Windows Terminal, VS Code)
+4. ⏳ Try bcherny's Ink fork
+5. ⏳ Profile rendering to understand the issue
+
+## Documentation
+
+- [REPRODUCED.md](./REPRODUCED.md) - Reproduction confirmation and analysis
+- [FINDINGS.md](./FINDINGS.md) - Detailed test results log
+- [TESTING-GUIDE.md](./TESTING-GUIDE.md) - Comprehensive testing instructions

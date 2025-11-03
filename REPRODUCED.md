@@ -108,10 +108,26 @@ Based on the research into the issue:
 
 ### Documentation Tasks
 
+- [x] Test and document results across multiple terminals
 - [ ] Record video/screencast of the flickering
-- [ ] Test and document results across multiple terminals
 - [ ] Create comparison matrix: vanilla Ink vs OSC133 vs fork
-- [ ] Document terminal capabilities and their impact
+- [x] Document terminal capabilities and their impact
+
+## Test Results
+
+### 2025-11-03: OSC133 on GNOME Terminal
+
+**Test**: OSC 133 prompt marking sequences
+**Command**: `npm run start:osc133`
+**Environment**: GNOME Terminal + tmux, Linux Mint, Node v24.11.0
+
+**Result**: ❌ Still flickers (no improvement)
+
+**Analysis**: GNOME Terminal **does not support OSC 133** sequences, so this was an inconclusive test. The sequences were emitted but silently ignored by the terminal. This test confirms flickering occurs on GNOME Terminal but doesn't tell us whether OSC 133 is an effective fix.
+
+**Status**: ⏳ Need to retest on OSC 133-compatible terminal (Kitty, Windows Terminal, VS Code)
+
+📋 **See [FINDINGS.md](./FINDINGS.md) for detailed test log and future test plans**
 
 ## References
 

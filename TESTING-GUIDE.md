@@ -74,16 +74,20 @@ npm start
 
 ## Comparison Matrix
 
-Create a testing matrix to document your findings:
+Testing matrix with actual results:
 
-| Test Type | Terminal | Flickering? | Severity (1-5) | Notes |
-|-----------|----------|-------------|----------------|-------|
-| Baseline  | GNOME    | Yes/No      | 1-5            |       |
-| OSC133    | GNOME    | Yes/No      | 1-5            |       |
-| Stress    | GNOME    | Yes/No      | 1-5            |       |
-| Baseline  | Kitty    | Yes/No      | 1-5            |       |
-| OSC133    | Kitty    | Yes/No      | 1-5            |       |
-| Stress    | Kitty    | Yes/No      | 1-5            |       |
+| Test Type | Terminal | Flickering? | Severity (1-5) | Notes | Date |
+|-----------|----------|-------------|----------------|-------|------|
+| Baseline  | GNOME    | ✅ Yes      | TBD            | In tmux | 2025-11-03 |
+| OSC133    | GNOME    | ✅ Yes      | TBD            | No OSC133 support - test inconclusive | 2025-11-03 |
+| Stress    | GNOME    | ⏳ Pending  | -              |       |      |
+| Baseline  | Kitty    | ⏳ Pending  | -              | Needs Kitty installed |      |
+| OSC133    | Kitty    | ⏳ Pending  | -              | **High priority** - has OSC133 support |      |
+| Stress    | Kitty    | ⏳ Pending  | -              |       |      |
+
+**Key Finding**: GNOME Terminal does not support OSC 133, making that test inconclusive. Need to test on Kitty, Windows Terminal, or VS Code terminal for valid OSC133 results.
+
+📋 **See [FINDINGS.md](./FINDINGS.md) for detailed test results and analysis**
 
 ## What to Look For
 
