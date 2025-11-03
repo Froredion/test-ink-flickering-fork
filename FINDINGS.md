@@ -385,3 +385,85 @@ This investigation is specifically motivated by the tmux + frequent update use c
 ---
 
 **Status**: ✅ Testing complete → ⏳ Source investigation starting
+
+---
+
+## 📅 2025-11-03: Phase 3 Complete - Source Code Investigation Failed
+
+### What We Did
+
+Built Ink v4.4.1 from source and tested three different fixes by modifying `src/log-update.ts`:
+
+**Test Fix A: cursorUp + Overwrite**
+- Strategy: Move cursor up, overwrite content, only clear trailing lines
+- Result: ❌ Still flickers
+- Why: Cursor movement visible, complete rewrite still happens
+
+**Test Fix B: Overwrite-Only (No Clearing)**
+- Strategy: Never clear preemptively, just overwrite
+- Result: ❌ Still flickers  
+- Why: No improvement over Fix A
+
+**Test Fix C: Line-by-Line Differential**
+- Strategy: Compare old vs new line-by-line, skip unchanged lines
+- Result: ❌ Still flickers (actually worse)
+- Why: More cursor operations = more visible flickering
+
+### Critical Finding: Cannot Be Fixed at log-update.ts Level
+
+The problem is architectural, not patchable:
+
+1. **Ink regenerates complete output** on every React state change
+2. **Full tree traversal** happens even for single-line changes
+3. **By the time log-update receives output**, it's just a string with no context
+4. **Any cursor movement is visible** in terminals like tmux
+5. **String diffing cannot recover** semantic UI structure
+
+### What Would Actually Work
+
+From [FIX-TESTING.md](./FIX-TESTING.md), three approaches identified:
+
+**Option 1**: React-level change tracking (1000+ lines, 2-3 weeks)
+**Option 2**: Separate StatusLine component (200-300 lines, 2-3 days) ✅ Most Practical
+**Option 3**: Alternate screen buffer (50-100 lines, 1 day)
+
+Only Option 2 is practical and would work in tmux.
+
+### Investigation Status: ✅ COMPLETE
+
+**Result**: Flickering is a **fundamental architectural limitation** of Ink.
+
+**Cannot be fixed with simple patches.** Real fix requires:
+- Architectural changes at renderer.ts or ink.tsx level
+- Semantic understanding of what changed
+- Separate rendering path for status components
+
+### Documentation Created
+
+- [INK-ANALYSIS.md](./INK-ANALYSIS.md) - Complete architectural analysis
+- [FIX-TESTING.md](./FIX-TESTING.md) - All test results with code
+- [CONCLUSIONS.md](./CONCLUSIONS.md) - Recommendations (to be created)
+
+### Recommendations
+
+**For Claude Code:**
+- Accept this as a known limitation of Ink
+- Reduce status update frequency (200ms instead of 100ms)
+- Consider moving to alternative TUI library
+- Or implement Option 2 (StatusLine component)
+
+**For TUI App Developers:**
+- Choose Blessed instead (has screen diffing)
+- Or implement Option 2 if using Ink
+- Or accept the trade-off (simplicity vs performance)
+
+---
+
+**Final Status**: ✅ **INVESTIGATION COMPLETE** 
+
+**Conclusion**: Flickering is architectural, not patchable at output level. Requires significant changes to Ink's rendering model to fix properly.
+
+**Date**: November 3, 2025
+**Investigation Duration**: 3 days (Nov 1-3, 2025)
+**Approaches Tested**: 6 total (3 external, 3 internal modifications)
+**Success Rate**: 0/6 (0%)

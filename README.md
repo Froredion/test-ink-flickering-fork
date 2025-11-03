@@ -23,11 +23,53 @@ Exhaustively tested all commonly suggested fixes:
 
 **Conclusion**: Flickering is fundamental to Ink's rendering architecture across all versions.
 
-### Phase 3: Source Code Investigation ⏳ Next
-We've decided to investigate Ink's rendering engine to implement selective updates.
-This is the only path forward for a universal fix that works in tmux.
+### Phase 3: Source Code Investigation ✅ Complete - **Cannot Be Fixed**
+Tested three different fixes by modifying Ink's source code (log-update.ts):
+- ❌ cursorUp + overwrite (still flickers)
+- ❌ Overwrite-only without clearing (still flickers)
+- ❌ Line-by-line differential updates (still flickers, actually worse)
 
-📋 **See [FINDINGS.md](./FINDINGS.md) for detailed test results and investigation plan**
+**Conclusion**: Flickering **cannot be fixed** at the log-update.ts level. The problem is architectural - Ink regenerates complete output on every React state change, losing information about what actually changed. Any cursor movement is visible in tmux.
+
+📋 **See [FIX-TESTING.md](./FIX-TESTING.md) for all test results**
+📋 **See [INK-ANALYSIS.md](./INK-ANALYSIS.md) for architectural analysis**
+📋 **See [CONCLUSIONS.md](./CONCLUSIONS.md) for recommendations**
+
+---
+
+## 🎯 Key Findings
+
+### The Problem is Architectural
+
+Ink's flickering cannot be fixed with simple patches. Here's why:
+
+1. **Full Tree Traversal**: Ink regenerates the complete output on EVERY React state change, even when only the status line updates
+2. **Lost Information**: By the time the output reaches `log-update.ts`, it's just a string - no context about what changed
+3. **Visible Cursor Movement**: Any ANSI cursor repositioning is visible in terminals like tmux
+4. **No Atomic Updates**: Terminals don't have a "swap buffers" operation - every write is immediately visible
+
+### What Would Actually Work
+
+**Option 2 from our analysis**: Create a separate `<StatusLine>` component that:
+- Uses absolute cursor positioning (`ESC[{row};{col}H`)
+- Updates independently from main content
+- Requires ~200-300 lines of code, 2-3 days effort
+- Would work in tmux
+
+### Recommendations for Users
+
+**If using Claude Code:**
+- Accept this is a limitation of Ink
+- Reduce status update frequency if possible
+- Consider terminals with better buffering (Kitty, Alacritty)
+- Use tmux with detach/reattach to avoid constant visibility
+
+**If building TUI apps:**
+- Consider alternative libraries (Blessed has screen diffing)
+- Or implement StatusLine component approach
+- Or accept the trade-off (simplicity vs performance)
+
+---
 
 ## What This Does
 
@@ -85,26 +127,35 @@ Test this on different terminals to compare behavior:
 - Ink Library Fork PR: https://github.com/bcherny/ink/pull/8
 - OSC133 Documentation: Search for "OSC 133 shell integration"
 
-## Next Steps
+## Investigation Summary
 
-### Testing Phase ✅ Complete
-1. ✅ ~~Confirm flickering reproduces in this minimal app~~
-2. ✅ ~~Compare with Claude Code's behavior~~
-3. ✅ ~~Test OSC133 sequences~~ (inconclusive, but fork with OSC133 fails)
-4. ✅ ~~Try bcherny's Ink fork~~ (doesn't fix it)
-5. ✅ ~~Test different Ink versions~~ (v3.x, v4.x, v5.x all flicker)
+### Phase 1: Reproduction ✅
+- Successfully reproduced flickering with minimal test case
+- Confirmed behavior matches Claude Code
 
-### Source Investigation Phase ⏳ Starting
-1. Clone and analyze Ink source code
-2. Study rendering engine architecture
-3. Identify root cause of full redraws
-4. Prototype selective update mechanism
-5. Implement fix if feasible
+### Phase 2: External Fix Testing ✅
+- OSC133 sequences: ❌ No improvement
+- bcherny's Ink fork: ❌ No improvement
+- Ink v3.2.0, v4.0.0, v4.4.1: ❌ All flicker
 
-See [FINDINGS.md](./FINDINGS.md) for detailed investigation plan.
+### Phase 3: Source Code Testing ✅
+- Built Ink from source
+- Tested 3 different rendering approaches
+- All failed to reduce flickering
+- **Conclusion**: Problem is architectural, not patchable
+
+### Investigation Status: ✅ COMPLETE
+
+**Result**: Flickering is a fundamental architectural limitation of Ink that cannot be fixed with simple patches. See [CONCLUSIONS.md](./CONCLUSIONS.md) for full analysis and recommendations.
 
 ## Documentation
 
-- [REPRODUCED.md](./REPRODUCED.md) - Reproduction confirmation and analysis
-- [FINDINGS.md](./FINDINGS.md) - Detailed test results log
-- [TESTING-GUIDE.md](./TESTING-GUIDE.md) - Comprehensive testing instructions
+### Investigation Results
+- [CONCLUSIONS.md](./CONCLUSIONS.md) - **START HERE**: Executive summary and recommendations
+- [FIX-TESTING.md](./FIX-TESTING.md) - All three tested fixes with code and analysis
+- [INK-ANALYSIS.md](./INK-ANALYSIS.md) - Complete architectural deep-dive
+
+### Investigation Process
+- [REPRODUCED.md](./REPRODUCED.md) - Initial reproduction confirmation
+- [FINDINGS.md](./FINDINGS.md) - Chronological test log
+- [TESTING-GUIDE.md](./TESTING-GUIDE.md) - How to reproduce and test

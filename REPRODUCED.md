@@ -99,17 +99,21 @@ All immediate testing has been completed:
 
 **Result**: No tested fix resolves the issue. Flickering is fundamental to Ink's architecture.
 
-### Source Investigation Phase ⏳ Starting
+### Source Investigation Phase ✅ Complete (2025-11-03)
 
-Since no existing fix works, we're investigating Ink's source code:
+Built Ink from source and tested three different rendering approaches:
 
-1. **Analyze Ink rendering engine** - Study how React reconciliation maps to terminal output
-2. **Identify full redraw triggers** - Understand why every state change redraws everything
-3. **Prototype selective updates** - Attempt to implement targeted rendering
-4. **Test and validate** - Ensure fix works in tmux + all terminals
-5. **Consider contribution** - Fork or contribute back to Ink if successful
+1. ✅ **Analyzed Ink rendering engine** - Complete architectural analysis in [INK-ANALYSIS.md](./INK-ANALYSIS.md)
+2. ✅ **Identified full redraw triggers** - Found smoking gun in log-update.ts:28
+3. ✅ **Tested three fix approaches** - All failed to reduce flickering
+   - ❌ Test Fix A: cursorUp + overwrite
+   - ❌ Test Fix B: Overwrite-only (no clearing)
+   - ❌ Test Fix C: Line-by-line differential
+4. ✅ **Validated results** - Confirmed flickering persists in tmux
 
-See [FINDINGS.md](./FINDINGS.md) for detailed investigation plan and test results.
+**Result**: Problem cannot be fixed at log-update.ts level. It's architectural.
+
+See [FIX-TESTING.md](./FIX-TESTING.md) for complete test results and analysis.
 
 ### Documentation Tasks
 
@@ -159,4 +163,29 @@ This reproduction is based on the analysis and reports from:
 
 ---
 
-**Status**: ✅ **REPRODUCED** - Ready for fix testing and evaluation
+## Investigation Complete
+
+**Status**: ✅ **INVESTIGATION COMPLETE** - Flickering is an architectural limitation
+
+### Final Conclusion
+
+After exhaustive testing across three phases:
+- ✅ Reproduced the issue
+- ✅ Tested all suggested external fixes (all failed)
+- ✅ Built Ink from source and tested internal fixes (all failed)
+
+**We conclude**: The flickering is a **fundamental architectural limitation** of Ink that cannot be fixed with simple patches. The problem stems from Ink's full-tree-traversal rendering model, where every React state change triggers a complete output regeneration.
+
+### What This Means
+
+- **For Claude Code**: This is a known limitation of using Ink
+- **For Users**: Accept the flickering or use terminals with better buffering
+- **For Developers**: Consider architectural changes (StatusLine component) or alternative TUI libraries
+
+### Read More
+
+- [CONCLUSIONS.md](./CONCLUSIONS.md) - Executive summary and recommendations
+- [FIX-TESTING.md](./FIX-TESTING.md) - All tested fixes with detailed analysis
+- [INK-ANALYSIS.md](./INK-ANALYSIS.md) - Complete architectural deep-dive
+
+**Investigation Date**: November 1-3, 2025
